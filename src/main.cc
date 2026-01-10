@@ -9,7 +9,7 @@
 
 using namespace rstd;
 
-constexpr fn divide(i32 a, i32 b) -> Result<i32, std::string> {
+fn divide(i32 a, i32 b) -> Result<i32, std::string> {
     if (b == 0) {
         return Err<i32, std::string>("division by zero");
     }

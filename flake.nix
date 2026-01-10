@@ -27,8 +27,8 @@
           ];
 
           shellHook = ''
-            echo "CMake: $(cmake --version | head -n1)"
-            echo "Ninja: $(ninja --version)"
+            cmake --version | head -n1
+            echo "ninja version $(ninja --version)"
           '';
         };
       });

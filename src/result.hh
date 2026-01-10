@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <functional>
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -20,32 +21,32 @@ class Result;
 // Tag types for Ok and Err
 template<typename T>
 struct OkTag {
-    T value;
+    T val;
 };
 
 template<typename E>
 struct ErrTag {
-    E value;
+    E val;
 };
 
 template<typename T, typename E>
 constexpr inline fn Ok(const T& val) -> Result<T, E> {
-    return Result<T,E>(OkTag<T>{val});
+    return Result<T,E>(OkTag<T>{ val });
 }
 
 template<typename T, typename E>
 constexpr inline fn Ok(T&& val) -> Result<T, E> {
-    return Result<T,E>(OkTag<T>{std::forward<T>(val)});
+    return Result<T,E>(OkTag<T>{ std::forward<T>(val) });
 }
 
 template<typename T, typename E>
 constexpr inline fn Err(const E& e) -> Result<T, E> {
-    return Result<T,E>(ErrTag<E>{e});
+    return Result<T,E>(ErrTag<E>{ e });
 }
 
 template<typename T, typename E>
 constexpr inline fn Err(E&& e) -> Result<T, E> {
-    return Result<T,E>(ErrTag<E>{std::forward<E>(e)});
+    return Result<T,E>(ErrTag<E>{ std::forward<E>( e ) });
 }
 
 template <typename T, typename E>
@@ -54,63 +55,47 @@ public:
     using ok_type = T;
     using err_type = E;
 
-private:
-    union Storage {
-        T ok_val;
-        E err_val;
-
-        constexpr Storage() {}
-        constexpr ~Storage() {}
-    } storage_;
-    bool is_ok_;
-
-    constexpr fn destroy() -> void {
-        if (is_ok_) {
-            storage_.ok_val.~T();
-        } else {
-            storage_.err_val.~E();
-        }
-    }
-
 public:
     // Constructors for OkTag
     constexpr Result(OkTag<T>&& ok) : is_ok_(true) {
-        new (&storage_.ok_val) T(std::move(ok.value));
+        std::construct_at(std::addressof(storage_.ok_val), std::move(ok.val));
     }
 
     constexpr Result(const OkTag<T>& ok) : is_ok_(true) {
-        new (&storage_.ok_val) T(ok.value);
+        std::construct_at(std::addressof(storage_.ok_val), ok.val);
     }
 
     // Constructors for ErrTag
     constexpr Result(ErrTag<E>&& err) : is_ok_(false) {
-        new (&storage_.err_val) E(std::move(err.value));
+        std::construct_at(std::addressof(storage_.err_val), std::move(err.val));
     }
 
     constexpr Result(const ErrTag<E>& err) : is_ok_(false) {
-        new (&storage_.err_val) E(err.value);
+        std::construct_at(std::addressof(storage_.err_val), err.val);
     }
 
     // Copy constructor
     constexpr Result(const Result& other) : is_ok_(other.is_ok_) {
         if (is_ok_) {
-            new (&storage_.ok_val) T(other.storage_.ok_val);
+            std::construct_at(std::addressof(storage_.ok_val), other.storage_.ok_val);
         } else {
-            new (&storage_.err_val) E(other.storage_.err_val);
+            std::construct_at(std::addressof(storage_.ok_val), other.storage_.err_val);
         }
     }
 
     // Move constructor
     constexpr Result(Result&& other) noexcept : is_ok_(other.is_ok_) {
         if (is_ok_) {
-            new (&storage_.ok_val) T(std::move(other.storage_.ok_val));
+            std::construct_at(std::addressof(storage_.ok_val), std::move(other.storage_.ok_val));
         } else {
-            new (&storage_.err_val) E(std::move(other.storage_.err_val));
+            std::construct_at(std::addressof(storage_.err_val), std::move(other.storage_.err_val));
         }
     }
 
     // Destructor
-    constexpr ~Result() { destroy(); }
+    constexpr ~Result() {
+        destroy();
+    }
 
     // Copy assignment
     constexpr fn operator=(const Result& other) -> Result& {
@@ -118,9 +103,9 @@ public:
             destroy();
             is_ok_ = other.is_ok_;
             if (is_ok_) {
-                new (&storage_.ok_val) T(other.storage_.ok_val);
+                std::construct_at(std::addressof(storage_.ok_val), other.storage_.ok_val);
             } else {
-                new (&storage_.err_val) E(other.storage_.err_val);
+                std::construct_at(std::addressof(storage_.err_val), other.storage_.err_val);
             }
         }
         return *this;
@@ -132,9 +117,9 @@ public:
             destroy();
             is_ok_ = other.is_ok_;
             if (is_ok_) {
-                new (&storage_.ok_val) T(std::move(other.storage_.ok_val));
+                std::construct_at(std::addressof(storage_.ok_val), std::move(other.storage_.ok_val));
             } else {
-                new (&storage_.err_val) E(std::move(other.storage_.err_val));
+                std::construct_at(std::addressof(storage_.err_val), std::move(other.storage_.err_val));
             }
         }
         return *this;
@@ -157,7 +142,7 @@ public:
         return is_ok_ && std::invoke(std::forward<F>(f), storage_.ok_val);
     }
 
-    /// Returns true if the result is Err and the value matches a predicate.
+    /// Returns true if the result is Err and the value matches a predicate
     template <typename F>
         requires std::predicate<F, const E&>
     [[nodiscard]] constexpr fn is_err_and(F&& f) const -> bool {
@@ -189,17 +174,17 @@ public:
     /// Converts from &Result<T, E> to Result<const T*, const E*>.
     [[nodiscard]] constexpr fn as_ref() const noexcept -> Result<const T*, const E*> {
         if (is_ok_) {
-            return Ok<const T*, const E*>(&storage_.ok_val);
+            return Ok(std::addressof(storage_.ok_val));
         }
-        return Err<const T*, const E*>(&storage_.err_val);
+        return Err(std::addressof(storage_.err_val));
     }
 
     /// Converts from &mut Result<T, E> to Result<T*, E*>.
     [[nodiscard]] constexpr fn as_mut() noexcept -> Result<T*, E*> {
         if (is_ok_) {
-            return Ok<T*, E*>(&storage_.ok_val);
+            return Ok(std::addressof(storage_.ok_val));
         }
-        return Err<T*, E*>(&storage_.err_val);
+        return Err(std::addressof(storage_.err_val));
     }
 
     /// Maps a Result<T, E> to Result<U, E> by applying a function.
@@ -367,7 +352,6 @@ public:
         }
         E err = std::move(storage_.err_val);
         destroy();
-        // Extract E from Result<U, E>
         using U = typename ResultType::ok_type;
         return Err<U, E>(std::move(err));
     }
@@ -431,13 +415,31 @@ public:
     [[nodiscard]] constexpr fn consume() -> Result {
         return std::move(*this);
     }
+
+private:
+    union Storage {
+        T ok_val;
+        E err_val;
+
+        constexpr Storage() {}
+        constexpr ~Storage() {}
+    } storage_;
+    bool is_ok_;
+
+    constexpr fn destroy() -> void {
+        if (is_ok_) {
+            storage_.ok_val.~T();
+        } else {
+            storage_.err_val.~E();
+        }
+    }
 };
 
 template <typename T>
 template <typename E>
-constexpr fn Option<T>::ok_or(E&& err) && -> Result<T, std::decay_t<E>> {
+fn Option<T>::ok_or(E&& err) && -> Result<T, std::decay_t<E>> {
     using ErrType = std::decay_t<E>;
-    if (has_value_) {
+    if (has_val_) {
         T val = std::move(*ptr());
         destroy();
         return Ok<T, ErrType>(std::move(val));
@@ -448,9 +450,9 @@ constexpr fn Option<T>::ok_or(E&& err) && -> Result<T, std::decay_t<E>> {
 template <typename T>
 template <typename F>
     requires std::invocable<F>
-constexpr fn Option<T>::ok_or_else(F&& f) && -> Result<T, std::invoke_result_t<F>> {
+fn Option<T>::ok_or_else(F&& f) && -> Result<T, std::invoke_result_t<F>> {
     using ErrType = std::invoke_result_t<F>;
-    if (has_value_) {
+    if (has_val_) {
         T val = std::move(*ptr());
         destroy();
         return Ok<T, ErrType>(std::move(val));
