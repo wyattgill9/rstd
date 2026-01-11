@@ -214,7 +214,6 @@ public:
         if (required <= capacity()) {
             return;
         }
-        // Grow by at least 2x to amortize allocations
         usize new_cap = std::max(required, capacity() * 2);
         if (new_cap == 0) {
             new_cap = 1;
