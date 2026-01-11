@@ -22,13 +22,8 @@ struct None_t {
 static inline None_t None{};
 
 template<typename T>
-inline fn Some(const T& val) -> Option<T> {
-    return Option<T>(val);
-}
-
-template<typename T>
-inline fn Some(T&& val) -> Option<T> {
-    return Option<T>(std::forward<T>(val));
+inline fn Some(T&& val) -> Option<std::remove_cvref_t<T>> {
+    return Option<std::remove_cvref_t<T>>(std::forward<T>(val));
 }
 
 template <typename T>
@@ -38,24 +33,24 @@ public:
     Option(None_t) noexcept : has_val_(false) {}
 
     Option(T&& val) : has_val_(true) {
-        std::construct_at(storage_, std::move(val));
+        std::construct_at(reinterpret_cast<T*>(storage_), std::move(val));
     }
 
     Option(const T& val) : has_val_(true) {
-        std::construct_at(storage_, val);
+        std::construct_at(reinterpret_cast<T*>(storage_), val);
     }
 
     // Copy constructor
     Option(const Option& other) : has_val_(other.has_val_) {
         if (has_val_) {
-            std::construct_at(storage_, *other.ptr());
+            std::construct_at(reinterpret_cast<T*>(storage_), *other.ptr());
         }
     }
 
     // Move constructor
     Option(Option&& other) noexcept : has_val_(other.has_val_) {
         if (has_val_) {
-            std::construct_at(storage_, std::move(*other.ptr()));
+            std::construct_at(reinterpret_cast<T*>(storage_), std::move(*other.ptr()));
             other.destroy();
         }
     }
@@ -69,7 +64,7 @@ public:
             destroy();
             has_val_ = other.has_val_;
             if (has_val_) {
-                std::construct_at(storage_, *other.ptr());
+                std::construct_at(reinterpret_cast<T*>(storage_), *other.ptr());
             }
         }
         return *this;
@@ -81,7 +76,7 @@ public:
             destroy();
             has_val_ = other.has_val_;
             if (has_val_) {
-                std::construct_at(storage_, std::move(*other.ptr()));
+                std::construct_at(reinterpret_cast<T*>(storage_), std::move(*other.ptr()));
                 other.destroy();
             }
         }
@@ -320,7 +315,7 @@ public:
     fn insert(T val) -> T& {
         destroy();
         has_val_ = true;
-        std::construct_at(storage_, std::move(val));
+        std::construct_at(reinterpret_cast<T*>(storage_), std::move(val));
         return *ptr();
     }
 
@@ -328,7 +323,7 @@ public:
     fn get_or_insert(T val) -> T& {
         if (!has_val_) {
             has_val_ = true;
-            std::construct_at(storage_, std::move(val));
+            std::construct_at(reinterpret_cast<T*>(storage_), std::move(val));
         }
         return *ptr();
     }
@@ -346,7 +341,7 @@ public:
     fn get_or_insert_with(F&& f) -> T& {
         if (!has_val_) {
             has_val_ = true;
-            std::construct_at(storage_, std::invoke(std::forward<F>(f)));
+            std::construct_at(reinterpret_cast<T*>(storage_), std::invoke(std::forward<F>(f)));
         }
         return *ptr();
     }
@@ -378,7 +373,7 @@ public:
         Option old = std::move(*this);
         destroy();
         has_val_ = true;
-        std::construct_at(storage_, std::move(value));
+        std::construct_at(reinterpret_cast<T*>(storage_), std::move(value));
         return old;
     }
 
