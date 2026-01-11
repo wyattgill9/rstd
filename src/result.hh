@@ -12,6 +12,10 @@
 
 namespace rstd {
 
+struct UnitType { // TODO
+    
+};
+
 template <typename T>
 class Option;
 
