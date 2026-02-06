@@ -1,7 +1,11 @@
-# A few thins
+# This repo has a simple Time-Series DB (WIP)
 
-# simple DB
-and
+
+
+
+
+
+
 # Bringing Rust Option<T> & Result<T, E> into C++
 
 ```cpp
