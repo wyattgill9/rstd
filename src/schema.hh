@@ -25,17 +25,17 @@ enum class TypeKind : u8 {
 };
 
 struct Field {
-    TypeHandle  type;         // Type of this field
-    u32         byte_offset; // Byte offset within parent struct
+    TypeHandle  type;        // Type of this field
+    u32         byte_offset; // Byte offset within parent
     std::string name;
 };
 
 struct TypeMeta {
-    u32 size;            // Total size in bytes
-    u32 alignment;       // Alignment requirement
-    TypeKind kind;       // Type discriminator
-    u8 _pad[3];          // Padding for alignment
-    u32 fields_offset;   // Index into fields_ for structs/composite types
+    u32 size;            // byte size
+    u32 alignment;       
+    TypeKind kind;       
+    u8 _pad[3];
+    u32 fields_offset;   // index into fields_ for structs/composite types
     u32 fields_count;    // # of fields
 };
 
