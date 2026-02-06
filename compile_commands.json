@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/Users/wyattgill/Github/gorilla_cpp/build",
-  "command": "/nix/store/8yy15sk3826gb00zp44xxrm8by9i3ia0-clang-wrapper-21.1.7/bin/clang++ -isystem /nix/store/5mhwf4lq5sjl102jk850i6a18al4x0jp-libcxx-19.1.2+apple-sdk-15.5/include -isystem /nix/store/nrjilzbs2bv9kw6ghsv3a53ah3fihnsa-compiler-rt-libc-21.1.7-dev/include -isystem /nix/store/q7bqbbp65iga8zmbi5j185ws5w3fdvnm-gdb-16.3/include -isystem /nix/store/bcfx704y6djv6swz229kjz76xy9gj6rq-libiconv-109.100.2-dev/include -isystem /nix/store/dd1xykdpii1i5wsw0f3ajmw3zybxbgpi-libresolv-91-dev/include -isystem /nix/store/nx49qaz3vv1s2p0gdjr610f3lzsjjqff-libsbuf-14.1.0-dev/include -isystem /nix/store/5mhwf4lq5sjl102jk850i6a18al4x0jp-libcxx-19.1.2+apple-sdk-15.5/include/c++/v1 -isystem /nix/store/8yy15sk3826gb00zp44xxrm8by9i3ia0-clang-wrapper-21.1.7/resource-root/include -isystem /nix/store/1b9inc48934yzc0m2w8j9sbva9svqhfy-apple-sdk-14.4/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -isystem /nix/store/qxb493fs3srs8zmbjddrdgrr17km6cq4-libSystem-B/include -std=c++23 -arch arm64 -isysroot /nix/store/1b9inc48934yzc0m2w8j9sbva9svqhfy-apple-sdk-14.4/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -mmacosx-version-min=14.0 @CMakeFiles/main.dir/src/main.cc.o.modmap -o CMakeFiles/main.dir/src/main.cc.o -c /Users/wyattgill/Github/gorilla_cpp/src/main.cc",
-  "file": "/Users/wyattgill/Github/gorilla_cpp/src/main.cc",
-  "output": "/Users/wyattgill/Github/gorilla_cpp/build/CMakeFiles/main.dir/src/main.cc.o"
-}
-]
