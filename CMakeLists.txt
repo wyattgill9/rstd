@@ -9,16 +9,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(absl CONFIG REQUIRED)
 find_package(benchmark REQUIRED)
-find_package(CapnProto REQUIRED)
-
-capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS
-    schema/point.capnp
-)
 
 add_executable(main
     src/main.cc
-    ${CAPNP_SRCS}
-    ${CAPNP_HDRS}
 )
 
 target_compile_features(main PRIVATE cxx_std_23)
@@ -35,7 +28,6 @@ target_include_directories(main PRIVATE
 )
 
 target_link_libraries(main PRIVATE
-    ${CAPNP_LIBRARIES}
     benchmark::benchmark
     absl::flat_hash_map
 )
